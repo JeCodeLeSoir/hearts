@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#160b17" />
+    <meta name="description" content="Un espace privé pour s'envoyer des cœurs en temps réel." />
+    <title>Claire — Cœurs en direct</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Italiana&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main>
+      <section id="login" class="login-shell" aria-labelledby="login-title">
+        <div class="login-card">
+          <div class="mini-heart" aria-hidden="true">♥</div>
+          <p class="eyebrow">Un espace rien qu'à nous</p>
+          <h1 id="login-title">Entre, Claire.</h1>
+          <p class="intro">Un petit geste, visible instantanément de l'autre côté.</p>
+          <form id="login-form" novalidate>
+            <label for="password">Mot de passe</label>
+            <div class="password-row">
+              <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128" aria-describedby="login-error" />
+              <button id="toggle-password" class="icon-button" type="button" aria-label="Afficher le mot de passe" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.4 12s3.5-6 9.6-6 9.6 6 9.6 6-3.5 6-9.6 6-9.6-6-9.6-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
+              </button>
+            </div>
+            <p id="login-error" class="form-error" role="alert"></p>
+            <button class="primary-button" type="submit">
+              <span>Ouvrir notre espace</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section id="room" class="room" hidden aria-labelledby="room-title">
+        <div id="scene" class="scene" aria-hidden="true"></div>
+        <button class="screen-trigger" type="button" aria-label="Envoyer un cœur depuis cet endroit" disabled></button>
+        <header class="topbar">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true">♥</span>
+            <div><p>CLAIRE</p><span>notre espace</span></div>
+          </div>
+          <div class="topbar-actions">
+            <button id="sound-toggle" class="sound-toggle" type="button" aria-label="Couper le son" aria-pressed="true">
+              <svg class="sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6.5 9H3v6h3.5l4.5 4V5Z"/><path d="M15 9.2a4 4 0 0 1 0 5.6M17.7 6.5a7.8 7.8 0 0 1 0 11"/></svg>
+              <svg class="sound-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6.5 9H3v6h3.5l4.5 4V5Z"/><path d="m16 10 5 5m0-5-5 5"/></svg>
+            </button>
+            <div id="presence" class="presence" role="status"><span></span><b>Connexion…</b></div>
+          </div>
+        </header>
+        <div class="room-copy">
+          <p class="eyebrow">Un battement à la fois</p>
+          <h2 id="room-title">Je pense<br />à toi.</h2>
+          <p>Touche l'écran pour lui envoyer un cœur.</p>
+        </div>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      </section>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

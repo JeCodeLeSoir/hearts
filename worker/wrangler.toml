@@ -1,0 +1,14 @@
+name = "claire-hearts-api"
+main = "src/index.js"
+compatibility_date = "2026-11-10"
+
+[durable_objects]
+bindings = [{ name = "ROOM", class_name = "HeartRoom" }]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["HeartRoom"]
+
+[vars]
+# Public GitHub Pages origin (paths are intentionally excluded from CORS origins).
+ALLOWED_ORIGIN = "https://jecodelesoir.github.io"
