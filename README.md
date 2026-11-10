@@ -56,3 +56,9 @@ Pour un test local, ajoute temporairement `http://localhost:8080` comme `ALLOWED
 ## Limites connues
 
 Le plafond de deux utilisateurs porte sur les connexions simultanées, pas sur deux identités personnelles : le mot de passe est partagé. Le compteur de cœurs est local à chaque onglet et n'est pas stocké.
+
+## Application Android
+
+Le dossier `android/` contient l'application native. Elle garde une connexion WebSocket via un service au premier plan et affiche une notification avec vibration lorsqu'un cœur arrive. Android affiche obligatoirement une notification permanente pendant l'écoute en arrière-plan.
+
+L'APK de développement est généré dans `android/app/build/outputs/apk/debug/app-debug.apk`. Le mot de passe saisi est chiffré avec Android Keystore et n'est jamais inscrit dans le code ou le dépôt.

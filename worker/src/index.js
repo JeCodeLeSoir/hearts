@@ -9,7 +9,8 @@ export default {
     if (url.pathname === "/health") return json({ ok: true }, 200, cors);
 
     if (url.pathname === "/auth" && request.method === "POST") {
-      if (!cors["Access-Control-Allow-Origin"]) return json({ error: "Origine refusée." }, 403, cors);
+      // Native clients do not send an Origin header. Browser origins remain restricted.
+      if (origin && !cors["Access-Control-Allow-Origin"]) return json({ error: "Origine refusée." }, 403, cors);
       let body;
       try { body = await request.json(); } catch { return json({ error: "Requête invalide." }, 400, cors); }
       if (typeof body.password !== "string" || body.password.length > 128) return json({ error: "Requête invalide." }, 400, cors);
@@ -25,7 +26,7 @@ export default {
     }
 
     if (url.pathname === "/room") {
-      if (!cors["Access-Control-Allow-Origin"]) return json({ error: "Origine refusée." }, 403, cors);
+      if (origin && !cors["Access-Control-Allow-Origin"]) return json({ error: "Origine refusée." }, 403, cors);
       if (request.headers.get("Upgrade") !== "websocket") return json({ error: "WebSocket requis." }, 426, cors);
       if (!await verifyToken(url.searchParams.get("token") || "", env.SESSION_SECRET)) return json({ error: "Session invalide." }, 401, cors);
       const id = env.ROOM.idFromName("claire-private-room");
