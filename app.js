@@ -194,11 +194,11 @@ function createHeartScene(container) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
 
-  scene.add(new THREE.AmbientLight(0xffd8e8, 1.8));
-  const key = new THREE.PointLight(0xff4f7b, 35, 30);
+  scene.add(new THREE.AmbientLight(0x8ffaff, 1.65));
+  const key = new THREE.PointLight(0x00f0ff, 38, 30);
   key.position.set(4, 4, 6);
   scene.add(key);
-  const fill = new THREE.PointLight(0x8b5cff, 20, 20);
+  const fill = new THREE.PointLight(0xff2b88, 28, 22);
   fill.position.set(-5, -2, 4);
   scene.add(fill);
 
@@ -211,7 +211,7 @@ function createHeartScene(container) {
   const geometry = new THREE.ExtrudeGeometry(shape, { depth: .65, bevelEnabled: true, bevelSegments: 6, steps: 1, bevelSize: .22, bevelThickness: .22, curveSegments: 32 });
   geometry.center();
   const particles = [];
-  const particlePalette = [0xff376f, 0xff6d99, 0xffa1bb, 0xffd2df, 0xffffff];
+  const particlePalette = [0xff2b88, 0xff5fa7, 0x00f0ff, 0xf4f000, 0xffffff];
   const clock = new THREE.Clock();
   function screenToWorld(x, y) {
     const point = new THREE.Vector3((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1, .2);
@@ -229,10 +229,10 @@ function createHeartScene(container) {
     for (let i = 0; i < 20; i += 1) {
       const material = new THREE.MeshPhysicalMaterial({
         color: particlePalette[Math.floor(Math.random() * particlePalette.length)],
-        emissive: self ? 0x30000d : 0x24001e,
-        emissiveIntensity: .45,
-        roughness: .24,
-        clearcoat: .8,
+        emissive: self ? 0x260012 : 0x003038,
+        emissiveIntensity: .72,
+        roughness: .18,
+        clearcoat: 1,
         transparent: true,
         depthWrite: false
       });
