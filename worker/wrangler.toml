@@ -1,4 +1,4 @@
-name = "claire-hearts-api"
+name = "hearts-api"
 main = "src/index.js"
 compatibility_date = "2026-11-10"
 

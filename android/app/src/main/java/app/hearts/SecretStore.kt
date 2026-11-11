@@ -1,4 +1,4 @@
-package fr.claire.hearts
+package app.hearts
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
@@ -11,7 +11,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 class SecretStore(private val context: Context) {
-    private val alias = "claire_hearts_password"
+    private val alias = "hearts_password"
     private val prefs = context.getSharedPreferences("secure_session", Context.MODE_PRIVATE)
 
     private fun key(): SecretKey {

@@ -15,7 +15,7 @@ export default {
       try { body = await request.json(); } catch { return json({ error: "Requête invalide." }, 400, cors); }
       if (typeof body.password !== "string" || body.password.length > 128) return json({ error: "Requête invalide." }, 400, cors);
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-      const limiterId = env.ROOM.idFromName("claire-private-room");
+      const limiterId = env.ROOM.idFromName("hearts-private-room");
       const limiter = env.ROOM.get(limiterId);
       const limitResponse = await limiter.fetch("https://room.internal/rate-limit", { method: "POST", body: ip });
       if (!limitResponse.ok) return json({ error: "Trop d'essais. Réessaie dans quelques minutes." }, 429, cors);
@@ -29,7 +29,7 @@ export default {
       if (origin && !cors["Access-Control-Allow-Origin"]) return json({ error: "Origine refusée." }, 403, cors);
       if (request.headers.get("Upgrade") !== "websocket") return json({ error: "WebSocket requis." }, 426, cors);
       if (!await verifyToken(url.searchParams.get("token") || "", env.SESSION_SECRET)) return json({ error: "Session invalide." }, 401, cors);
-      const id = env.ROOM.idFromName("claire-private-room");
+      const id = env.ROOM.idFromName("hearts-private-room");
       return env.ROOM.get(id).fetch(request);
     }
     return json({ error: "Introuvable." }, 404, cors);

@@ -1,4 +1,4 @@
-# Claire Hearts
+# Hearts
 
 Une mini-app privée pour deux personnes : un clic envoie en direct une animation de cœur 3D à l'autre personne.
 
@@ -26,15 +26,15 @@ Dans `worker/wrangler.toml`, remplace `ALLOWED_ORIGIN` par l'origine exacte de G
 
 ## Site publié
 
-- Frontend : `https://jecodelesoir.github.io/claire-hearts/`
-- API : `https://claire-hearts-api.dark-aurelien-poke-worker.workers.dev`
+- Frontend : `https://jecodelesoir.github.io/hearts/`
+- API : `https://hearts-api.dark-aurelien-poke-worker.workers.dev`
 
 ## 2. Relier le frontend
 
 Le frontend est déjà relié au Worker déployé. Pour utiliser un autre Worker, remplace dans `app.js` :
 
 ```js
-const API_URL = "https://claire-hearts-api.dark-aurelien-poke-worker.workers.dev";
+const API_URL = "https://hearts-api.dark-aurelien-poke-worker.workers.dev";
 ```
 
 par la nouvelle URL affichée après `wrangler deploy`.

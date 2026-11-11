@@ -9,9 +9,9 @@
     <application
         android:allowBackup="false"
         android:icon="@drawable/ic_heart"
-        android:label="Claire Hearts"
+        android:label="Hearts"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ClaireHearts"
+        android:theme="@style/Theme.Hearts"
         android:usesCleartextTraffic="false">
         <activity
             android:name=".MainActivity"

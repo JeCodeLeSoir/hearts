@@ -1,4 +1,4 @@
-package fr.claire.hearts
+package app.hearts
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -20,12 +20,12 @@ import java.util.concurrent.TimeUnit
 
 class HeartService : Service() {
     companion object {
-        const val ACTION_START = "fr.claire.hearts.START"
-        const val ACTION_STOP = "fr.claire.hearts.STOP"
-        const val ACTION_SEND = "fr.claire.hearts.SEND"
-        const val ACTION_HEART = "fr.claire.hearts.HEART"
-        const val ACTION_STATE = "fr.claire.hearts.STATE"
-        private const val API = "https://claire-hearts-api.dark-aurelien-poke-worker.workers.dev"
+        const val ACTION_START = "app.hearts.START"
+        const val ACTION_STOP = "app.hearts.STOP"
+        const val ACTION_SEND = "app.hearts.SEND"
+        const val ACTION_HEART = "app.hearts.HEART"
+        const val ACTION_STATE = "app.hearts.STATE"
+        private const val API = "https://hearts-api.dark-aurelien-poke-worker.workers.dev"
         private const val CHANNEL_SERVICE = "heart_connection"
         private const val CHANNEL_HEARTS = "heart_arrivals"
     }
@@ -152,7 +152,7 @@ class HeartService : Service() {
         )
         return NotificationCompat.Builder(this, CHANNEL_SERVICE)
             .setSmallIcon(R.drawable.ic_heart)
-            .setContentTitle("Claire Hearts actif")
+            .setContentTitle("Hearts actif")
             .setContentText(text)
             .setOngoing(true)
             .setOnlyAlertOnce(true)

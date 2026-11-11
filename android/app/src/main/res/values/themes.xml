@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.ClaireHearts" parent="android:style/Theme.Material.NoActionBar">
+    <style name="Theme.Hearts" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:statusBarColor">#160B17</item>

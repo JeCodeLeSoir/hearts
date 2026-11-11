@@ -1,7 +1,7 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.181.1/build/three.module.js";
 
 // Replace this after deploying the Worker. No password or auth token belongs here.
-const API_URL = "https://claire-hearts-api.dark-aurelien-poke-worker.workers.dev";
+const API_URL = "https://hearts-api.dark-aurelien-poke-worker.workers.dev";
 
 const login = document.querySelector("#login");
 const room = document.querySelector("#room");

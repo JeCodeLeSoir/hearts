@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "fr.claire.hearts"
+    namespace = "app.hearts"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "fr.claire.hearts"
+        applicationId = "app.hearts"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

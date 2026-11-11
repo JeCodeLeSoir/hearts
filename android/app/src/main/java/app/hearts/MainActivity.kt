@@ -1,4 +1,4 @@
-package fr.claire.hearts
+package app.hearts
 
 import android.Manifest
 import android.app.Activity
@@ -62,7 +62,7 @@ class MainActivity : Activity() {
             textSize = 12f; letterSpacing = .16f; setTextColor(Color.rgb(255, 154, 180))
         })
         root.addView(TextView(this).apply {
-            text = "Entre, Claire."
+            text = "Entre dans Hearts."
             textSize = 48f; setTextColor(Color.rgb(255, 248, 244)); setPadding(0, dp(10), 0, dp(28))
         })
         val input = EditText(this).apply {
