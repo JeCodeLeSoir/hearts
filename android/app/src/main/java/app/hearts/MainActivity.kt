@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.*
+import android.graphics.drawable.GradientDrawable
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Build
@@ -12,9 +13,21 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.*
 import android.widget.*
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.sin
 import kotlin.random.Random
+
+private object Ui {
+    val bg = Color.rgb(8, 10, 13)
+    val panel = Color.rgb(10, 16, 19)
+    val ink = Color.rgb(244, 247, 237)
+    val muted = Color.rgb(152, 174, 175)
+    val cyan = Color.rgb(0, 240, 255)
+    val yellow = Color.rgb(244, 240, 0)
+    val pink = Color.rgb(255, 43, 136)
+}
 
 class MainActivity : Activity() {
     private lateinit var canvas: HeartCanvas
@@ -24,15 +37,15 @@ class MainActivity : Activity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 HeartService.ACTION_HEART -> if (::canvas.isInitialized) canvas.burst(canvas.width * .72f, canvas.height * .62f)
-                HeartService.ACTION_STATE -> if (::status.isInitialized) status.text = intent.getStringExtra("state") ?: "Connexion…"
+                HeartService.ACTION_STATE -> if (::status.isInitialized) status.text = "■ ${(intent.getStringExtra("state") ?: "Connexion…").uppercase()}"
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = Color.rgb(22, 11, 23)
-        window.navigationBarColor = Color.rgb(15, 8, 16)
+        window.statusBarColor = Ui.bg
+        window.navigationBarColor = Ui.bg
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 41)
         }
@@ -51,33 +64,55 @@ class MainActivity : Activity() {
     }
 
     private fun showLogin() {
-        val root = LinearLayout(this).apply {
+        val frame = FrameLayout(this).apply { setBackgroundColor(Ui.bg) }
+        applySafeArea(frame)
+        frame.addView(CyberBackdrop(this), FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+
+        val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(28), dp(36), dp(28), dp(36))
-            setBackgroundColor(Color.rgb(22, 11, 23))
+            setPadding(dp(24), dp(28), dp(24), dp(28))
+            background = panel(Ui.cyan, Ui.panel)
         }
-        root.addView(TextView(this).apply {
-            text = "UN ESPACE RIEN QU'À NOUS"
-            textSize = 12f; letterSpacing = .16f; setTextColor(Color.rgb(255, 154, 180))
+        card.addView(TextView(this).apply {
+            text = "ACCESS NODE                                      01"
+            textSize = 10f; letterSpacing = .12f; setTextColor(Ui.cyan); typeface = Typeface.MONOSPACE
         })
-        root.addView(TextView(this).apply {
-            text = "Entre dans Hearts."
-            textSize = 48f; setTextColor(Color.rgb(255, 248, 244)); setPadding(0, dp(10), 0, dp(28))
+        card.addView(TextView(this).apply {
+            text = "CONNEXION PRIVÉE // DEUX PERSONNES"
+            textSize = 10f; letterSpacing = .1f; setTextColor(Ui.yellow); typeface = Typeface.DEFAULT_BOLD
+            setPadding(0, dp(32), 0, dp(8))
+        })
+        card.addView(TextView(this).apply {
+            text = "ENTRE DANS\nHEARTS."
+            textSize = 46f; letterSpacing = -.04f; setTextColor(Ui.ink); typeface = Typeface.DEFAULT_BOLD
+            includeFontPadding = false
+        })
+        card.addView(TextView(this).apply {
+            text = "Un signal. Un battement. Reçu instantanément de l'autre côté."
+            textSize = 15f; setTextColor(Ui.muted); setLineSpacing(0f, 1.25f)
+            setPadding(0, dp(20), 0, dp(28))
+        })
+        card.addView(TextView(this).apply {
+            text = "MOT DE PASSE"; textSize = 10f; letterSpacing = .12f
+            setTextColor(Ui.cyan); typeface = Typeface.MONOSPACE; setPadding(0, 0, 0, dp(8))
         })
         val input = EditText(this).apply {
-            hint = "Mot de passe"; textSize = 17f
-            setTextColor(Color.WHITE); setHintTextColor(Color.rgb(180, 158, 173))
+            hint = "••••••••"; textSize = 17f
+            setTextColor(Ui.ink); setHintTextColor(Ui.muted)
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            setSingleLine(true); setPadding(dp(16), dp(12), dp(16), dp(12))
-            backgroundTintList = android.content.res.ColorStateList.valueOf(Color.rgb(255, 79, 123))
+            setSingleLine(true); setPadding(dp(16), dp(12), dp(16), dp(12)); typeface = Typeface.MONOSPACE
+            background = panel(Ui.cyan, Color.rgb(7, 18, 21))
         }
-        root.addView(input, LinearLayout.LayoutParams.MATCH_PARENT, dp(56))
-        val error = TextView(this).apply { setTextColor(Color.rgb(255, 176, 195)); setPadding(0, dp(8), 0, dp(8)) }
-        root.addView(error)
+        card.addView(input, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(56)))
+        val error = TextView(this).apply {
+            setTextColor(Ui.pink); setPadding(0, dp(8), 0, dp(8)); minHeight = dp(34); typeface = Typeface.MONOSPACE
+        }
+        card.addView(error)
         val button = Button(this).apply {
-            text = "Ouvrir notre espace"; isAllCaps = false; textSize = 16f
-            setTextColor(Color.WHITE); backgroundTintList = android.content.res.ColorStateList.valueOf(Color.rgb(255, 79, 123))
+            text = "INITIALISER LE LIEN     ›"; isAllCaps = false; textSize = 14f; letterSpacing = .08f
+            setTextColor(Ui.bg); typeface = Typeface.DEFAULT_BOLD
+            backgroundTintList = android.content.res.ColorStateList.valueOf(Ui.yellow)
             setOnClickListener {
                 val value = input.text.toString()
                 if (value.isBlank()) { error.text = "Entre le mot de passe."; return@setOnClickListener }
@@ -85,36 +120,59 @@ class MainActivity : Activity() {
                 showRoomAndStart()
             }
         }
-        root.addView(button, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(56)))
-        setContentView(root)
+        card.addView(button, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(56)))
+        frame.addView(card, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER).apply {
+            setMargins(dp(20), dp(28), dp(20), dp(28))
+        })
+        frame.addView(TextView(this).apply {
+            text = "CH//PRIVATE-LINK"; textSize = 9f; letterSpacing = .12f; setTextColor(Ui.cyan); typeface = Typeface.MONOSPACE
+        }, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, dp(40), Gravity.TOP or Gravity.START).apply { setMargins(dp(22), dp(20), 0, 0) })
+        frame.addView(TextView(this).apply {
+            text = "ENCRYPTION ACTIVE"; textSize = 9f; letterSpacing = .1f; setTextColor(Ui.muted); typeface = Typeface.MONOSPACE
+        }, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, dp(34), Gravity.BOTTOM or Gravity.START).apply { setMargins(dp(22), 0, 0, dp(12)) })
+        setContentView(frame)
     }
 
     private fun showRoomAndStart() {
-        val frame = FrameLayout(this).apply { setBackgroundColor(Color.rgb(22, 11, 23)) }
+        val frame = FrameLayout(this).apply { setBackgroundColor(Ui.bg) }
+        applySafeArea(frame)
         canvas = HeartCanvas(this)
         frame.addView(canvas, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+        frame.addView(TextView(this).apply {
+            text = "CH"; gravity = Gravity.CENTER; textSize = 11f; setTextColor(Ui.cyan); typeface = Typeface.MONOSPACE
+            background = panel(Ui.cyan, Color.TRANSPARENT)
+        }, FrameLayout.LayoutParams(dp(44), dp(40), Gravity.TOP or Gravity.START).apply { setMargins(dp(20), dp(20), 0, 0) })
+        frame.addView(TextView(this).apply {
+            text = "HEARTS//LINK\nPRIVATE CHANNEL"; textSize = 10f; setTextColor(Ui.ink)
+            typeface = Typeface.MONOSPACE; setLineSpacing(0f, 1.15f)
+        }, FrameLayout.LayoutParams(dp(210), dp(48), Gravity.TOP or Gravity.START).apply { setMargins(dp(76), dp(20), 0, 0) })
         val copy = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(28), 0, dp(28), 0)
+            setPadding(dp(36), 0, dp(24), 0)
         }
         copy.addView(TextView(this).apply {
-            text = "UN BATTEMENT À LA FOIS"; textSize = 11f; letterSpacing = .15f
-            setTextColor(Color.rgb(255, 154, 180))
+            text = "NEURAL TRANSMISSION // READY"; textSize = 10f; letterSpacing = .1f
+            setTextColor(Ui.yellow); typeface = Typeface.DEFAULT_BOLD
         })
         copy.addView(TextView(this).apply {
-            text = "Je pense\nà toi."; textSize = 58f; setTextColor(Color.rgb(255, 248, 244)); includeFontPadding = false
+            text = "JE PENSE\nÀ TOI."; textSize = 58f; letterSpacing = -.04f
+            setTextColor(Ui.ink); typeface = Typeface.DEFAULT_BOLD; includeFontPadding = false
         })
         copy.addView(TextView(this).apply {
-            text = "Touche l'écran pour lui envoyer un cœur."; textSize = 15f
-            setTextColor(Color.rgb(216, 198, 209)); setPadding(0, dp(18), 0, 0)
+            text = "[ TAP ANYWHERE ]  //  ENVOIE UN CŒUR"; textSize = 11f
+            setTextColor(Ui.muted); typeface = Typeface.MONOSPACE; setPadding(0, dp(20), 0, 0)
         })
         val copyParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER_VERTICAL)
         frame.addView(copy, copyParams)
         status = TextView(this).apply {
-            text = "Connexion…"; textSize = 13f; setTextColor(Color.rgb(216, 198, 209))
-            setPadding(dp(14), dp(9), dp(14), dp(9))
+            text = "■ CONNEXION…"; textSize = 10f; setTextColor(Ui.cyan); typeface = Typeface.MONOSPACE
+            setPadding(dp(12), dp(9), dp(12), dp(9)); background = panel(Ui.cyan, Color.rgb(7, 18, 21))
         }
-        frame.addView(status, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, dp(44), Gravity.TOP or Gravity.END).apply { setMargins(0, dp(20), dp(18), 0) })
+        frame.addView(status, FrameLayout.LayoutParams(dp(154), dp(44), Gravity.TOP or Gravity.END).apply { setMargins(0, dp(20), dp(18), 0) })
+        frame.addView(TextView(this).apply {
+            text = "X.042 / Y.077\nNIGHT CHANNEL"; textSize = 9f; gravity = Gravity.END
+            setTextColor(Ui.cyan); typeface = Typeface.MONOSPACE
+        }, FrameLayout.LayoutParams(dp(150), dp(50), Gravity.BOTTOM or Gravity.END).apply { setMargins(0, 0, dp(20), dp(18)) })
         setContentView(frame)
         canvas.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) {
@@ -131,6 +189,37 @@ class MainActivity : Activity() {
     }
 
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
+
+    private fun applySafeArea(view: View) {
+        ViewCompat.setOnApplyWindowInsetsListener(view) { target, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            target.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            insets
+        }
+    }
+
+    private fun panel(stroke: Int, fill: Int) = GradientDrawable().apply {
+        shape = GradientDrawable.RECTANGLE; setColor(fill); setStroke(dp(1), stroke); cornerRadius = 0f
+    }
+}
+
+class CyberBackdrop(context: Context) : View(context) {
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    override fun onDraw(canvas: Canvas) {
+        canvas.drawColor(Ui.bg)
+        paint.strokeWidth = 1f
+        paint.color = Color.argb(28, 0, 240, 255)
+        val step = width / 7f
+        for (i in -2..9) canvas.drawLine(width / 2f, height * .48f, i * step, height.toFloat(), paint)
+        var y = height * .52f
+        var gap = 34f
+        while (y < height) { canvas.drawLine(0f, y, width.toFloat(), y, paint); y += gap; gap *= 1.18f }
+        paint.color = Color.argb(18, 255, 255, 255)
+        var scan = 0f
+        while (scan < height) { canvas.drawLine(0f, scan, width.toFloat(), scan, paint); scan += 8f }
+        paint.color = Color.argb(30, 255, 43, 136)
+        canvas.drawCircle(width * .78f, height * .2f, width * .35f, paint)
+    }
 }
 
 private data class Particle(
@@ -142,7 +231,7 @@ class HeartCanvas(context: Context) : View(context) {
     private val particles = CopyOnWriteArrayList<Particle>()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var lastFrame = System.nanoTime()
-    private val palette = intArrayOf(0xffff376f.toInt(), 0xffff6d99.toInt(), 0xffffa1bb.toInt(), 0xffffd2df.toInt(), Color.WHITE)
+    private val palette = intArrayOf(Ui.pink, 0xffff5fa7.toInt(), Ui.cyan, Ui.yellow, Color.WHITE)
 
     init {
         isClickable = true
@@ -168,6 +257,7 @@ class HeartCanvas(context: Context) : View(context) {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        drawHud(canvas)
         val now = System.nanoTime()
         val dt = ((now - lastFrame) / 1_000_000_000f).coerceAtMost(.04f)
         lastFrame = now
@@ -185,6 +275,21 @@ class HeartCanvas(context: Context) : View(context) {
         if (particles.isNotEmpty()) postInvalidateOnAnimation()
     }
 
+    private fun drawHud(canvas: Canvas) {
+        paint.style = Paint.Style.STROKE; paint.strokeWidth = 1f; paint.color = Color.argb(45, 0, 240, 255)
+        val horizon = height * .5f
+        for (i in -3..10) canvas.drawLine(width / 2f, horizon, i * width / 7f, height.toFloat(), paint)
+        var y = horizon + 36f
+        var gap = 42f
+        while (y < height) { canvas.drawLine(0f, y, width.toFloat(), y, paint); y += gap; gap *= 1.19f }
+        paint.color = Color.argb(24, 255, 255, 255)
+        var scan = 0f
+        while (scan < height) { canvas.drawLine(0f, scan, width.toFloat(), scan, paint); scan += 8f }
+        paint.style = Paint.Style.FILL
+        paint.color = Ui.yellow; canvas.drawRect(8f, height * .39f, 16f, height * .49f, paint)
+        paint.color = Ui.pink; canvas.drawRect(8f, height * .505f, 16f, height * .61f, paint)
+    }
+
     private fun drawHeart(canvas: Canvas, x: Float, y: Float, size: Float, paint: Paint) {
         val path = Path().apply {
             moveTo(x, y + size * .85f)
@@ -192,7 +297,7 @@ class HeartCanvas(context: Context) : View(context) {
             cubicTo(x + size * .9f, y - size, x + size * 1.35f, y + size * .05f, x, y + size * .85f)
             close()
         }
-        paint.setShadowLayer(12f, 0f, 5f, Color.argb(90, 255, 45, 105))
+        paint.setShadowLayer(14f, 0f, 5f, Color.argb(110, Color.red(paint.color), Color.green(paint.color), Color.blue(paint.color)))
         canvas.drawPath(path, paint)
     }
 }

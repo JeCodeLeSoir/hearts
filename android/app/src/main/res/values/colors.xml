@@ -1,5 +1,7 @@
 <resources>
-    <color name="ink">#FFF8F4</color>
-    <color name="background">#160B17</color>
-    <color name="rose">#FF4F7B</color>
+    <color name="ink">#F4F7ED</color>
+    <color name="background">#080A0D</color>
+    <color name="cyan">#00F0FF</color>
+    <color name="yellow">#F4F000</color>
+    <color name="pink">#FF2B88</color>
 </resources>
