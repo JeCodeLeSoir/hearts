@@ -46,7 +46,11 @@ class HeartService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_STOP -> { stopping = true; socket?.close(1000, "stop"); stopSelf() }
-            ACTION_SEND -> socket?.send("{\"type\":\"heart\"}")
+            ACTION_SEND -> {
+                val x = intent.getFloatExtra("x", .5f).coerceIn(0f, 1f)
+                val y = intent.getFloatExtra("y", .5f).coerceIn(0f, 1f)
+                socket?.send(JSONObject().put("type", "heart").put("x", x).put("y", y).toString())
+            }
             else -> {
                 startForeground(1001, serviceNotification("Connexion…"))
                 if (socket == null) authenticateAndConnect()
@@ -94,7 +98,11 @@ class HeartService : Service() {
             override fun onMessage(webSocket: WebSocket, text: String) {
                 val data = try { JSONObject(text) } catch (_: Exception) { return }
                 when (data.optString("type")) {
-                    "heart" -> receiveHeart()
+                    "heart" -> {
+                        val x = data.optDouble("x", .5).takeIf { it.isFinite() && it in 0.0..1.0 } ?: .5
+                        val y = data.optDouble("y", .5).takeIf { it.isFinite() && it in 0.0..1.0 } ?: .5
+                        receiveHeart(x.toFloat(), y.toFloat())
+                    }
                     "presence" -> {
                         val label = if (data.optInt("count") >= 2) "Vous êtes deux" else "En attente de l'autre"
                         updateState(label); notifyService(label)
@@ -111,8 +119,8 @@ class HeartService : Service() {
         })
     }
 
-    private fun receiveHeart() {
-        sendBroadcast(Intent(ACTION_HEART).setPackage(packageName))
+    private fun receiveHeart(x: Float, y: Float) {
+        sendBroadcast(Intent(ACTION_HEART).setPackage(packageName).putExtra("x", x).putExtra("y", y))
         val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
         vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 70, 55, 110), -1))
         ToneGenerator(android.media.AudioManager.STREAM_NOTIFICATION, 65).apply {

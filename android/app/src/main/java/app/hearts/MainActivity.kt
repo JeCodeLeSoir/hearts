@@ -35,7 +35,11 @@ class MainActivity : Activity() {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
-                HeartService.ACTION_HEART -> if (::canvas.isInitialized) canvas.burst(canvas.width * .72f, canvas.height * .62f)
+                HeartService.ACTION_HEART -> if (::canvas.isInitialized) {
+                    val x = intent.getFloatExtra("x", .5f).coerceIn(0f, 1f)
+                    val y = intent.getFloatExtra("y", .5f).coerceIn(0f, 1f)
+                    canvas.burst(canvas.width * x, canvas.height * y)
+                }
                 HeartService.ACTION_STATE -> if (::status.isInitialized) status.text = "■ ${(intent.getStringExtra("state") ?: "Connexion…").uppercase()}"
             }
         }
@@ -180,7 +184,11 @@ class MainActivity : Activity() {
                     startTone(ToneGenerator.TONE_PROP_BEEP2, 120)
                     android.os.Handler(mainLooper).postDelayed({ release() }, 220)
                 }
-                startService(Intent(this, HeartService::class.java).setAction(HeartService.ACTION_SEND))
+                startService(Intent(this, HeartService::class.java).apply {
+                    action = HeartService.ACTION_SEND
+                    putExtra("x", (event.x / canvas.width).coerceIn(0f, 1f))
+                    putExtra("y", (event.y / canvas.height).coerceIn(0f, 1f))
+                })
             }
             true
         }

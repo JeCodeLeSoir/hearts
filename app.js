@@ -76,10 +76,15 @@ soundToggle.addEventListener("click", (event) => {
 
 function sendHeart(event) {
   if (!socket || socket.readyState !== WebSocket.OPEN) return;
-  socket.send(JSON.stringify({ type: "heart" }));
   const keyboardClick = event.detail === 0;
-  visual.burst(true, keyboardClick ? { x: innerWidth / 2, y: innerHeight / 2 } : { x: event.clientX, y: event.clientY });
-  playParticleSound(false, keyboardClick ? innerWidth / 2 : event.clientX);
+  const point = keyboardClick ? { x: innerWidth / 2, y: innerHeight / 2 } : { x: event.clientX, y: event.clientY };
+  socket.send(JSON.stringify({
+    type: "heart",
+    x: Math.max(0, Math.min(1, point.x / innerWidth)),
+    y: Math.max(0, Math.min(1, point.y / innerHeight))
+  }));
+  visual.burst(true, point);
+  playParticleSound(false, point.x);
   showToast("Cœur envoyé");
 }
 
@@ -103,9 +108,10 @@ function connect() {
   socket.addEventListener("message", ({ data }) => {
     try {
       const message = JSON.parse(data);
-      if (message.type === "heart") {
-        visual.burst(false);
-        playParticleSound(true, innerWidth * .8);
+      if (message.type === "heart" && isNormalizedCoordinate(message.x) && isNormalizedCoordinate(message.y)) {
+        const point = { x: message.x * innerWidth, y: message.y * innerHeight };
+        visual.burst(false, point);
+        playParticleSound(true, point.x);
         showToast("Un cœur vient d'arriver");
       }
       if (message.type === "presence") {
@@ -123,6 +129,10 @@ function connect() {
     presence.querySelector("b").textContent = event.code === 4003 ? "Espace complet" : "Hors ligne";
     if (event.code !== 4003 && sessionToken) reconnectTimer = setTimeout(connect, 2000);
   });
+}
+
+function isNormalizedCoordinate(value) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1;
 }
 
 function showToast(message) {

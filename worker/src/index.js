@@ -57,7 +57,9 @@ export class HeartRoom {
       let data;
       try { data = JSON.parse(event.data); } catch { return; }
       if (data.type !== "heart") return;
-      for (const peer of this.sessions) if (peer !== server) this.safeSend(peer, { type: "heart" });
+      if (!isNormalizedCoordinate(data.x) || !isNormalizedCoordinate(data.y)) return;
+      const heart = { type: "heart", x: data.x, y: data.y };
+      for (const peer of this.sessions) if (peer !== server) this.safeSend(peer, heart);
     });
     const close = () => {
       this.sessions.delete(server);
@@ -106,6 +108,7 @@ function corsHeaders(origin, allowed) {
   };
 }
 function json(value, status, headers) { return new Response(JSON.stringify(value), { status, headers: { "Content-Type": "application/json; charset=utf-8", ...headers } }); }
+function isNormalizedCoordinate(value) { return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1; }
 function constantTimeEqual(a, b) {
   const aa = encoder.encode(a); const bb = encoder.encode(b);
   let mismatch = aa.length ^ bb.length;
