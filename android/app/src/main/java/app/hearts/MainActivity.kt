@@ -15,7 +15,6 @@ import android.view.*
 import android.widget.*
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -228,49 +227,63 @@ private data class Particle(
 )
 
 class HeartCanvas(context: Context) : View(context) {
-    private val particles = CopyOnWriteArrayList<Particle>()
+    private val particles = ArrayList<Particle>(48)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val unitHeart = Path().apply {
+        moveTo(0f, .85f)
+        cubicTo(-1.35f, .05f, -.9f, -1f, 0f, -.35f)
+        cubicTo(.9f, -1f, 1.35f, .05f, 0f, .85f)
+        close()
+    }
+    private var hudBitmap: Bitmap? = null
     private var lastFrame = System.nanoTime()
     private val palette = intArrayOf(Ui.pink, 0xffff5fa7.toInt(), Ui.cyan, Ui.yellow, Color.WHITE)
 
     init {
         isClickable = true
         contentDescription = "Zone d'envoi de cœurs"
-        setLayerType(LAYER_TYPE_SOFTWARE, null)
     }
 
     fun burst(x: Float, y: Float) {
-        repeat(20) {
+        repeat(12) {
             particles += Particle(
                 x + Random.nextFloat() * 80f - 40f,
                 y + Random.nextFloat() * 36f - 18f,
-                Random.nextFloat() * 25f + 18f,
+                Random.nextFloat() * 23f + 18f,
                 Random.nextFloat() * 130f + 110f,
                 Random.nextFloat() * 90f - 45f,
                 Random.nextFloat() * 6.28f,
                 palette.random()
             )
         }
-        while (particles.size > 90) particles.removeAt(0)
+        while (particles.size > 48) particles.removeAt(0)
         invalidate()
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        hudBitmap?.recycle()
+        if (w > 0 && h > 0) {
+            hudBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { drawHud(Canvas(it)) }
+        }
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        drawHud(canvas)
+        hudBitmap?.let { canvas.drawBitmap(it, 0f, 0f, null) }
         val now = System.nanoTime()
         val dt = ((now - lastFrame) / 1_000_000_000f).coerceAtMost(.04f)
         lastFrame = now
-        val iterator = particles.iterator()
-        for (p in iterator) {
+        for (index in particles.lastIndex downTo 0) {
+            val p = particles[index]
             p.age += dt
             p.y -= p.speed * dt
             p.x += (p.drift + sin(p.age * 4f + p.phase) * 55f) * dt
-            val progress = p.age / 2.25f
+            val progress = p.age / 1.85f
             paint.color = p.color
             paint.alpha = (255 * (1f - progress * progress)).toInt().coerceIn(0, 255)
             drawHeart(canvas, p.x, p.y, p.size, paint)
-            if (progress >= 1f) particles.remove(p)
+            if (progress >= 1f) particles.removeAt(index)
         }
         if (particles.isNotEmpty()) postInvalidateOnAnimation()
     }
@@ -291,13 +304,16 @@ class HeartCanvas(context: Context) : View(context) {
     }
 
     private fun drawHeart(canvas: Canvas, x: Float, y: Float, size: Float, paint: Paint) {
-        val path = Path().apply {
-            moveTo(x, y + size * .85f)
-            cubicTo(x - size * 1.35f, y + size * .05f, x - size * .9f, y - size, x, y - size * .35f)
-            cubicTo(x + size * .9f, y - size, x + size * 1.35f, y + size * .05f, x, y + size * .85f)
-            close()
-        }
-        paint.setShadowLayer(14f, 0f, 5f, Color.argb(110, Color.red(paint.color), Color.green(paint.color), Color.blue(paint.color)))
-        canvas.drawPath(path, paint)
+        canvas.save()
+        canvas.translate(x, y)
+        canvas.scale(size, size)
+        canvas.drawPath(unitHeart, paint)
+        canvas.restore()
+    }
+
+    override fun onDetachedFromWindow() {
+        hudBitmap?.recycle()
+        hudBitmap = null
+        super.onDetachedFromWindow()
     }
 }
