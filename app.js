@@ -2,6 +2,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.181.1/build/three.m
 
 // Replace this after deploying the Worker. No password or auth token belongs here.
 const API_URL = "https://hearts-api.dark-aurelien-poke-worker.workers.dev";
+const SESSION_KEY = "hearts.session-token";
 
 const login = document.querySelector("#login");
 const room = document.querySelector("#room");
@@ -43,12 +44,10 @@ form.addEventListener("submit", async (event) => {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Mot de passe incorrect.");
-    sessionToken = data.token;
+    if (!isSessionValid(data.token)) throw new Error("Session invalide reçue du serveur.");
+    saveSession(data.token);
     password.value = "";
-    login.hidden = true;
-    room.hidden = false;
-    visual = createHeartScene(document.querySelector("#scene"));
-    connect();
+    enterRoom();
   } catch (error) {
     loginError.textContent = error.message || "Connexion impossible.";
     password.focus();
@@ -90,6 +89,11 @@ function sendHeart(event) {
 
 function connect() {
   clearTimeout(reconnectTimer);
+  if (!isSessionValid(sessionToken)) {
+    clearSession();
+    showLogin("Ta session a expiré. Entre à nouveau le mot de passe.");
+    return;
+  }
   const url = new URL(API_URL);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   url.pathname = "/room";
@@ -127,8 +131,62 @@ function connect() {
     screenTrigger.disabled = true;
     presence.classList.remove("online");
     presence.querySelector("b").textContent = event.code === 4003 ? "Espace complet" : "Hors ligne";
-    if (event.code !== 4003 && sessionToken) reconnectTimer = setTimeout(connect, 2000);
+    if (event.code !== 4003 && isSessionValid(sessionToken)) reconnectTimer = setTimeout(connect, 2000);
+    else if (!isSessionValid(sessionToken)) {
+      clearSession();
+      showLogin("Ta session a expiré. Entre à nouveau le mot de passe.");
+    }
   });
+}
+
+function enterRoom() {
+  login.hidden = true;
+  room.hidden = false;
+  if (!visual) visual = createHeartScene(document.querySelector("#scene"));
+  connect();
+}
+
+function showLogin(message = "") {
+  clearTimeout(reconnectTimer);
+  socket?.close(1000, "session ended");
+  login.hidden = false;
+  room.hidden = true;
+  loginError.textContent = message;
+  password.focus();
+}
+
+function saveSession(token) {
+  sessionToken = token;
+  try { sessionStorage.setItem(SESSION_KEY, token); } catch { /* Private browsing may block storage. */ }
+}
+
+function clearSession() {
+  sessionToken = "";
+  try { sessionStorage.removeItem(SESSION_KEY); } catch { /* Storage may be unavailable. */ }
+}
+
+function isSessionValid(token) {
+  if (typeof token !== "string") return false;
+  const [payload, signature, extra] = token.split(".");
+  if (!payload || !signature || extra) return false;
+  try {
+    const base64 = payload.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(payload.length / 4) * 4, "=");
+    const data = JSON.parse(atob(base64));
+    return Number.isFinite(data.exp) && data.exp > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function restoreSession() {
+  let token = "";
+  try { token = sessionStorage.getItem(SESSION_KEY) || ""; } catch { /* Storage may be unavailable. */ }
+  if (!isSessionValid(token)) {
+    clearSession();
+    return;
+  }
+  sessionToken = token;
+  enterRoom();
 }
 
 function isNormalizedCoordinate(value) {
@@ -306,3 +364,5 @@ function createHeartScene(container) {
   });
   return { burst };
 }
+
+restoreSession();
