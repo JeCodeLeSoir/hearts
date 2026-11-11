@@ -177,7 +177,9 @@ class MainActivity : Activity() {
             setTextColor(Ui.cyan); typeface = Typeface.MONOSPACE
         }, FrameLayout.LayoutParams(dp(150), dp(50), Gravity.BOTTOM or Gravity.END).apply { setMargins(0, 0, dp(20), dp(18)) })
         setContentView(frame)
-        canvas.setOnTouchListener { _, event ->
+        frame.isClickable = true
+        frame.contentDescription = "Zone d'envoi de cœurs"
+        frame.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) {
                 canvas.burst(event.x, event.y)
                 ToneGenerator(AudioManager.STREAM_MUSIC, 55).apply {
@@ -248,8 +250,7 @@ class HeartCanvas(context: Context) : View(context) {
     private val palette = intArrayOf(Ui.pink, 0xffff5fa7.toInt(), Ui.cyan, Ui.yellow, Color.WHITE)
 
     init {
-        isClickable = true
-        contentDescription = "Zone d'envoi de cœurs"
+        isClickable = false
     }
 
     fun burst(x: Float, y: Float) {

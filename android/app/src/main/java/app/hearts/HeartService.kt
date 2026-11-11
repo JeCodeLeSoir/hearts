@@ -35,6 +35,7 @@ class HeartService : Service() {
         .retryOnConnectionFailure(true)
         .build()
     private var socket: WebSocket? = null
+    private val pendingHearts = ArrayDeque<String>()
     private var reconnectAttempt = 0
     private var stopping = false
 
@@ -49,7 +50,11 @@ class HeartService : Service() {
             ACTION_SEND -> {
                 val x = intent.getFloatExtra("x", .5f).coerceIn(0f, 1f)
                 val y = intent.getFloatExtra("y", .5f).coerceIn(0f, 1f)
-                socket?.send(JSONObject().put("type", "heart").put("x", x).put("y", y).toString())
+                val message = JSONObject().put("type", "heart").put("x", x).put("y", y).toString()
+                if (socket?.send(message) != true) synchronized(pendingHearts) {
+                    if (pendingHearts.size >= 8) pendingHearts.removeFirst()
+                    pendingHearts.addLast(message)
+                }
             }
             else -> {
                 startForeground(1001, serviceNotification("Connexion…"))
@@ -92,6 +97,12 @@ class HeartService : Service() {
         socket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 reconnectAttempt = 0
+                synchronized(pendingHearts) {
+                    while (pendingHearts.isNotEmpty()) {
+                        if (!webSocket.send(pendingHearts.first())) break
+                        pendingHearts.removeFirst()
+                    }
+                }
                 updateState("Connecté • en attente")
                 notifyService("Connecté • en attente d'un cœur")
             }
